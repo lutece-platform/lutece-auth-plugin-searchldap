@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?><plug-in>
+   <name>mylutece-searchldap</name>
+   <class>fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation</class>
+   <version>1.0.0</version>
+   <description>searchldap.module.description</description>
+   <documentation/>
+   <installation/>
+   <changes/>
+   <user-guide/>
+   <provider>searchldap.module.provider</provider>
+   <provider-url>http://lutece.paris.fr</provider-url>
+   <icon-url>images/admin/skin/plugins/searchldap/mylutece-searchldap.png</icon-url>
+   <copyright>Copyright 2001-2014 Mairie de Paris</copyright>
+   <core-version-dependency>
+		<min-core-version>4.3.0</min-core-version>
+		<max-core-version/>	
+   </core-version-dependency>
+	
+	<!-- if the plugin must have a connection pool with parameter : 1 - yes, 0 - no -->   
+   <db-pool-required>0</db-pool-required>
+   
+   <!-- Applications -->
+   <applications>
+   </applications>
+    
+   <!-- Administration interface parameters -->
+   <admin-features>
+   </admin-features>
+   
+   <daemons>
+    </daemons>
+   
+   	<!-- RBAC Resources -->
+	<rbac-resource-types>
+	</rbac-resource-types>
+	
+	<!-- Admin Dashboard  components -->
+    <admindashboard-components>
+    </admindashboard-components>
+    
+</plug-in>
