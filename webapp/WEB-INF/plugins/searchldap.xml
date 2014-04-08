@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?><plug-in>
-   <name>mylutece-searchldap</name>
+   <name>searchldap</name>
    <class>fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation</class>
    <version>1.0.0</version>
    <description>searchldap.module.description</description>
