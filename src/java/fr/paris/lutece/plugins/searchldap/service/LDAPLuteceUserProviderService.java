@@ -50,7 +50,7 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
 {
     private static final String PROPERTY_GUID_REGEX = "searchldap.guid.regularexpression";
 
-    private LdapBrowser _ldapBrowser = SpringContextService.getBean( LdapBrowser.BEAN_NAME );
+    private volatile LdapBrowser _ldapBrowser;
 
     /**
      * {@inheritDoc}
@@ -61,7 +61,7 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
         String strRegEx = AppPropertiesService.getProperty( PROPERTY_GUID_REGEX );
         if ( StringUtils.isEmpty( strRegEx ) || Pattern.matches( strRegEx, strName ) )
         {
-            return _ldapBrowser.getUserPublicData( strName );
+            return getLDAPBrowser( ).getUserPublicData( strName );
         }
         return null;
     }
@@ -75,4 +75,16 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
         return true;
     }
 
+    /**
+     * Get the LDAP browser
+     * @return The LDAP browser
+     */
+    private LdapBrowser getLDAPBrowser( )
+    {
+        if ( _ldapBrowser == null )
+        {
+            _ldapBrowser = SpringContextService.getBean( LdapBrowser.BEAN_NAME );
+        }
+        return _ldapBrowser;
+    }
 }
