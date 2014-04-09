@@ -49,8 +49,11 @@ import java.util.regex.Pattern;
 public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
 {
     private static final String PROPERTY_GUID_REGEX = "searchldap.guid.regularexpression";
+    private static final String PROPERTY_STORE_USERS_FOUND_IN_CACHE = "searchldap.cache.storeUsersNotFoundInCache";
 
     private volatile LdapBrowser _ldapBrowser;
+
+    private Boolean _bStoreUsersNotFoundInCache;
 
     /**
      * {@inheritDoc}
@@ -61,7 +64,19 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
         String strRegEx = AppPropertiesService.getProperty( PROPERTY_GUID_REGEX );
         if ( StringUtils.isEmpty( strRegEx ) || Pattern.matches( strRegEx, strName ) )
         {
-            return getLDAPBrowser( ).getUserPublicData( strName );
+            if ( getStoreUsersNotFoundInCache( )
+                    && LDAPUserNotFoundCacheService.getService( ).getFromCache(
+                            LDAPUserNotFoundCacheService.getCacheKeyFromUserName( strName ) ) != null )
+            {
+                return null;
+            }
+            LuteceUser user = getLDAPBrowser( ).getUserPublicData( strName );
+            if ( user == null && getStoreUsersNotFoundInCache( ) )
+            {
+                LDAPUserNotFoundCacheService.getService( ).putInCache(
+                        LDAPUserNotFoundCacheService.getCacheKeyFromUserName( strName ), strName );
+            }
+            return user;
         }
         return null;
     }
@@ -86,5 +101,20 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
             _ldapBrowser = SpringContextService.getBean( LdapBrowser.BEAN_NAME );
         }
         return _ldapBrowser;
+    }
+
+    /**
+     * Check if users that was not found in the LDAP should be stored in cache
+     * @return True if users not found in the LDAP should be stored in cache,
+     *         false otherwise
+     */
+    private boolean getStoreUsersNotFoundInCache( )
+    {
+        if ( _bStoreUsersNotFoundInCache == null )
+        {
+            _bStoreUsersNotFoundInCache = new Boolean( Boolean.parseBoolean( AppPropertiesService
+                    .getProperty( PROPERTY_STORE_USERS_FOUND_IN_CACHE ) ) );
+        }
+        return _bStoreUsersNotFoundInCache;
     }
 }

@@ -42,6 +42,9 @@ import fr.paris.lutece.portal.service.util.AppPropertiesService;
 import org.apache.commons.lang.StringUtils;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.naming.CommunicationException;
 import javax.naming.NamingEnumeration;
@@ -70,27 +73,20 @@ public class LdapBrowser
     private static final String PROPERTY_USER_DN_SEARCH_FILTER_BY_GUID = "searchldap.ldap.userSearch.guid";
     private static final String PROPERTY_USER_SUBTREE = "searchldap.ldap.userSubtree";
     private static final String PROPERTY_DN_ATTRIBUTE_GUID = "searchldap.ldap.dn.attributeName.guid";
-    private static final String PROPERTY_DN_ATTRIBUTE_FAMILY_NAME = "searchldap.ldap.dn.attributeName.familyName";
-    private static final String PROPERTY_DN_ATTRIBUTE_GIVEN_NAME = "searchldap.ldap.dn.attributeName.givenName";
+    private static final String PROPERTY_DN_ATTRIBUTE_LIST = "searchldap.ldap.dn.attributeName.list";
     private static final String PROPERTY_DN_ATTRIBUTE_EMAIL = "searchldap.ldap.dn.attributeName.email";
+    private static final String PROPERTY_DN_ATTRIBUTE_PREFIXE = "searchldap.ldap.dn.attributeName.";
+    private static final String PROPERTY_LUTECE_USER_ATTRIBUTE_PROFIXE = "searchldap.luteceuser.attribute.";
+    // Attributes
     private static final String ATTRIBUTE_GUID = AppPropertiesService.getProperty( PROPERTY_DN_ATTRIBUTE_GUID );
-    private static final String ATTRIBUTE_FAMILY_NAME = AppPropertiesService
-            .getProperty( PROPERTY_DN_ATTRIBUTE_FAMILY_NAME );
-    private static final String ATTRIBUTE_GIVEN_NAME = AppPropertiesService
-            .getProperty( PROPERTY_DN_ATTRIBUTE_GIVEN_NAME );
     private static final String ATTRIBUTE_EMAIL = AppPropertiesService.getProperty( PROPERTY_DN_ATTRIBUTE_EMAIL );
 
-    private static final String ATTRIBUTE_FAMILY_NAME_LUTECE_USER = AppPropertiesService
-            .getProperty( "searchldap.luteceuser.family_name" );
-    private static final String ATTRIBUTE_GIVEN_NAME_LUTECE_USER = AppPropertiesService
-            .getProperty( "searchldap.luteceuser.given_name" );
     private static final String ATTRIBUTE_EMAIL_LUTECE_USER = AppPropertiesService
-            .getProperty( "searchldap.luteceuser.email" );
+            .getProperty( "searchldap.luteceuser.attribute.email" );
 
-    /**
-     * Search controls for the user entry search
-     */
-    private SearchControls _scUserSearchControls;
+    private static final String CONSTANT_COMMA = ",";
+
+    private volatile Map<String, String> _mapLdapLuteceUser;
 
     /**
      *
@@ -118,18 +114,17 @@ public class LdapBrowser
 
         try
         {
-            _scUserSearchControls = new SearchControls( );
-            _scUserSearchControls.setSearchScope( getUserDnSearchScope( ) );
-            _scUserSearchControls.setReturningObjFlag( true );
-            _scUserSearchControls.setCountLimit( 0 );
+            SearchControls scUserSearchControls = new SearchControls( );
+            scUserSearchControls.setSearchScope( getUserDnSearchScope( ) );
+            scUserSearchControls.setReturningObjFlag( true );
+            scUserSearchControls.setCountLimit( 1 );
 
             context = LdapUtil.getContext( getInitialContextProvider( ), getProviderUrl( ), getBindDn( ),
                     getBindPassword( ) );
 
             NamingEnumeration<SearchResult> userResults = LdapUtil.searchUsers( context, strUserSearchFilter,
-                    getUserDnSearchBase( ), StringUtils.EMPTY, _scUserSearchControls );
+                    getUserDnSearchBase( ), StringUtils.EMPTY, scUserSearchControls );
 
-            int count = 0;
             while ( ( userResults != null ) && userResults.hasMore( ) )
             {
                 sr = userResults.next( );
@@ -142,20 +137,6 @@ public class LdapBrowser
                     strWssoId = attributes.get( ATTRIBUTE_GUID ).get( ).toString( );
                 }
 
-                String strLastName = StringUtils.EMPTY;
-
-                if ( attributes.get( ATTRIBUTE_FAMILY_NAME ) != null )
-                {
-                    strLastName = attributes.get( ATTRIBUTE_FAMILY_NAME ).get( ).toString( );
-                }
-
-                String strFirstName = StringUtils.EMPTY;
-
-                if ( attributes.get( ATTRIBUTE_GIVEN_NAME ) != null )
-                {
-                    strFirstName = attributes.get( ATTRIBUTE_GIVEN_NAME ).get( ).toString( );
-                }
-
                 String strEmail = StringUtils.EMPTY;
 
                 if ( attributes.get( ATTRIBUTE_EMAIL ) != null )
@@ -164,19 +145,18 @@ public class LdapBrowser
                 }
 
                 user = new LDAPUser( strWssoId, SecurityService.getInstance( ).getAuthenticationService( ) );
-                user.setUserInfo( ATTRIBUTE_FAMILY_NAME_LUTECE_USER, strLastName );
-                user.setUserInfo( ATTRIBUTE_GIVEN_NAME_LUTECE_USER, strFirstName );
                 user.setEmail( strEmail );
                 user.setUserInfo( ATTRIBUTE_EMAIL_LUTECE_USER, strEmail );
-                count++;
-            }
 
-            // More than one user found (failure)
-            if ( count > 1 )
-            {
-                AppLogService.error( "More than one entry in the ldap for id " + strId );
+                Map<String, String> mapLdapLuteceUserAttributes = getMapLdapLuteceUser( );
 
-                return null;
+                for ( Entry<String, String> entry : mapLdapLuteceUserAttributes.entrySet( ) )
+                {
+                    if ( attributes.get( entry.getKey( ) ) != null )
+                    {
+                        user.setUserInfo( entry.getValue( ), attributes.get( entry.getKey( ) ).get( ).toString( ) );
+                    }
+                }
             }
 
             return user;
@@ -291,5 +271,41 @@ public class LdapBrowser
     private String getBindPassword( )
     {
         return AppPropertiesService.getProperty( PROPERTY_BIND_PASSWORD );
+    }
+
+    /**
+     * Get a map containing an association between MDAP attributes and lutece
+     * user attributes. Each attribute of the map should be queried to the LDAP.
+     * @return The map
+     */
+    private synchronized Map<String, String> getMapLdapLuteceUser( )
+    {
+        if ( _mapLdapLuteceUser == null )
+        {
+            String strListAttributes = AppPropertiesService.getProperty( PROPERTY_DN_ATTRIBUTE_LIST );
+
+            if ( StringUtils.isNotEmpty( strListAttributes ) )
+            {
+                String[] strArrayListAttributes = strListAttributes.split( CONSTANT_COMMA );
+                _mapLdapLuteceUser = new HashMap<String, String>( strArrayListAttributes.length );
+                for ( String strAttribute : strArrayListAttributes )
+                {
+                    String strLdapAttribute = AppPropertiesService.getProperty( PROPERTY_DN_ATTRIBUTE_PREFIXE
+                            + strAttribute );
+                    String strLuteceUserAttribute = AppPropertiesService
+                            .getProperty( PROPERTY_LUTECE_USER_ATTRIBUTE_PROFIXE + strAttribute );
+                    if ( StringUtils.isNotEmpty( strLdapAttribute ) && StringUtils.isNotEmpty( strLuteceUserAttribute ) )
+                    {
+                        _mapLdapLuteceUser.put( strLdapAttribute, strLuteceUserAttribute );
+                    }
+                }
+            }
+            else
+            {
+                _mapLdapLuteceUser = new HashMap<String, String>( );
+            }
+        }
+
+        return _mapLdapLuteceUser;
     }
 }
