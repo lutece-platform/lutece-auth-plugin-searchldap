@@ -11,7 +11,7 @@
 	<artifactId>plugin-searchldap</artifactId>
 	<packaging>lutece-plugin</packaging>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>Lutece mylutece search LDAP module</name>
+	<name>Lutece search LDAP plugin</name>
 
 	<repositories>
 		<repository>
