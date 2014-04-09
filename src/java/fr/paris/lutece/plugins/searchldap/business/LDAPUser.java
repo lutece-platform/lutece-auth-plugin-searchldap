@@ -65,9 +65,9 @@ public class LDAPUser extends LuteceUser
     }
 
     /**
-     * Get the user email
-     * @return The email
+     * {@inheritDoc}
      */
+    @Override
     public String getEmail(  )
     {
         return _strEmail;
