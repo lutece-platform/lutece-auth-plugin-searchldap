@@ -39,27 +39,25 @@ import fr.paris.lutece.portal.service.cache.AbstractCacheableService;
 /**
  * Cache service to save user names that
  */
-public class LDAPUserNotFoundCacheService extends AbstractCacheableService
+public final class LDAPUserNotFoundCacheService extends AbstractCacheableService
 {
     private static final String SERVICE_NAME = "LdapUserNotFoundCacheService";
-
     private static final String USER_CACHE_KEY_PREFIXE = "searchldap.userNotFound.";
-
-    private static LDAPUserNotFoundCacheService _instance = new LDAPUserNotFoundCacheService( );
+    private static LDAPUserNotFoundCacheService _instance = new LDAPUserNotFoundCacheService(  );
 
     /**
      * Private constructor
      */
-    private LDAPUserNotFoundCacheService( )
+    private LDAPUserNotFoundCacheService(  )
     {
-        initCache( );
+        initCache(  );
     }
 
     /**
      * Get the instance of this service
      * @return The instance of this service
      */
-    public static LDAPUserNotFoundCacheService getService( )
+    public static LDAPUserNotFoundCacheService getService(  )
     {
         return _instance;
     }
@@ -68,7 +66,7 @@ public class LDAPUserNotFoundCacheService extends AbstractCacheableService
      * {@inheritDoc}
      */
     @Override
-    public String getName( )
+    public String getName(  )
     {
         return SERVICE_NAME;
     }

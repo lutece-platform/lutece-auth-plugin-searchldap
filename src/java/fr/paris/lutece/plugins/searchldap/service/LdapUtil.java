@@ -52,7 +52,7 @@ public final class LdapUtil
     /**
      * Constructeur
      */
-    private LdapUtil( )
+    private LdapUtil(  )
     {
         // empty contructor
     }
@@ -67,9 +67,9 @@ public final class LdapUtil
      * @throws NamingException in case of error
      */
     public static DirContext getContext( String strLDAPContext, String strLDAPUrl, String strAdminDN,
-            String strAdminPassword ) throws NamingException
+        String strAdminPassword ) throws NamingException
     {
-        Hashtable<String, String> env = new Hashtable<String, String>( );
+        Hashtable<String, String> env = new Hashtable<String, String>(  );
 
         env.put( Context.INITIAL_CONTEXT_FACTORY, strLDAPContext );
         env.put( Context.PROVIDER_URL, strLDAPUrl );
@@ -86,11 +86,12 @@ public final class LdapUtil
      * @param context the context to free
      * @throws NamingException in case of error
      */
-    public static void freeContext( DirContext context ) throws NamingException
+    public static void freeContext( DirContext context )
+        throws NamingException
     {
         if ( context != null )
         {
-            context.close( );
+            context.close(  );
         }
     }
 
@@ -104,11 +105,11 @@ public final class LdapUtil
      * @throws NamingException in case of error
      */
     public static DirContext bindUser( String strLDAPContext, String strLDAPUrl, String strDN, String strPassword )
-            throws NamingException
+        throws NamingException
     {
         DirContext context = null;
 
-        Hashtable<String, String> env = new Hashtable<String, String>( );
+        Hashtable<String, String> env = new Hashtable<String, String>(  );
 
         env.put( Context.INITIAL_CONTEXT_FACTORY, strLDAPContext );
         env.put( Context.PROVIDER_URL, strLDAPUrl );
@@ -121,7 +122,7 @@ public final class LdapUtil
     }
 
     /**
-     * 
+     *
      * @param context the ldap context
      * @param strFilter the filter
      * @param strUserDN the user dn
@@ -131,7 +132,7 @@ public final class LdapUtil
      * @throws NamingException in case of error
      */
     public static NamingEnumeration<SearchResult> searchUsers( DirContext context, String strFilter, String strUserDN,
-            String strDNBase, SearchControls sc ) throws NamingException
+        String strDNBase, SearchControls sc ) throws NamingException
     {
         NamingEnumeration<SearchResult> enumeration = context.search( strUserDN + strDNBase, strFilter, sc );
 

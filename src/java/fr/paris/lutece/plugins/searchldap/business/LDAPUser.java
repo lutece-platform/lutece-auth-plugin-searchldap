@@ -42,6 +42,7 @@ import fr.paris.lutece.portal.service.security.LuteceUser;
  */
 public class LDAPUser extends LuteceUser
 {
+    private static final long serialVersionUID = -8595919488586634326L;
     private String _strEmail;
 
     /**
@@ -67,7 +68,7 @@ public class LDAPUser extends LuteceUser
      * Get the user email
      * @return The email
      */
-    public String getEmail( )
+    public String getEmail(  )
     {
         return _strEmail;
     }

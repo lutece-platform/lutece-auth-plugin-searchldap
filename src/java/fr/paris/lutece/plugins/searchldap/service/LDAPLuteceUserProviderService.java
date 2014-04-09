@@ -50,9 +50,7 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
 {
     private static final String PROPERTY_GUID_REGEX = "searchldap.guid.regularexpression";
     private static final String PROPERTY_STORE_USERS_FOUND_IN_CACHE = "searchldap.cache.storeUsersNotFoundInCache";
-
     private volatile LdapBrowser _ldapBrowser;
-
     private Boolean _bStoreUsersNotFoundInCache;
 
     /**
@@ -62,22 +60,29 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
     public LuteceUser getLuteceUserFromName( String strName )
     {
         String strRegEx = AppPropertiesService.getProperty( PROPERTY_GUID_REGEX );
+
         if ( StringUtils.isEmpty( strRegEx ) || Pattern.matches( strRegEx, strName ) )
         {
-            if ( getStoreUsersNotFoundInCache( )
-                    && LDAPUserNotFoundCacheService.getService( ).getFromCache(
-                            LDAPUserNotFoundCacheService.getCacheKeyFromUserName( strName ) ) != null )
+            if ( getStoreUsersNotFoundInCache(  ) &&
+                    ( LDAPUserNotFoundCacheService.getService(  )
+                                                      .getFromCache( LDAPUserNotFoundCacheService.getCacheKeyFromUserName( 
+                            strName ) ) != null ) )
             {
                 return null;
             }
-            LuteceUser user = getLDAPBrowser( ).getUserPublicData( strName );
-            if ( user == null && getStoreUsersNotFoundInCache( ) )
+
+            LuteceUser user = getLDAPBrowser(  ).getUserPublicData( strName );
+
+            if ( ( user == null ) && getStoreUsersNotFoundInCache(  ) )
             {
-                LDAPUserNotFoundCacheService.getService( ).putInCache(
-                        LDAPUserNotFoundCacheService.getCacheKeyFromUserName( strName ), strName );
+                LDAPUserNotFoundCacheService.getService(  )
+                                            .putInCache( LDAPUserNotFoundCacheService.getCacheKeyFromUserName( strName ),
+                    strName );
             }
+
             return user;
         }
+
         return null;
     }
 
@@ -85,7 +90,7 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
      * {@inheritDoc}
      */
     @Override
-    public boolean canUsersBeCached( )
+    public boolean canUsersBeCached(  )
     {
         return true;
     }
@@ -94,12 +99,13 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
      * Get the LDAP browser
      * @return The LDAP browser
      */
-    private LdapBrowser getLDAPBrowser( )
+    private LdapBrowser getLDAPBrowser(  )
     {
         if ( _ldapBrowser == null )
         {
             _ldapBrowser = SpringContextService.getBean( LdapBrowser.BEAN_NAME );
         }
+
         return _ldapBrowser;
     }
 
@@ -108,13 +114,14 @@ public class LDAPLuteceUserProviderService implements ILuteceUserProviderService
      * @return True if users not found in the LDAP should be stored in cache,
      *         false otherwise
      */
-    private boolean getStoreUsersNotFoundInCache( )
+    private boolean getStoreUsersNotFoundInCache(  )
     {
         if ( _bStoreUsersNotFoundInCache == null )
         {
-            _bStoreUsersNotFoundInCache = new Boolean( Boolean.parseBoolean( AppPropertiesService
-                    .getProperty( PROPERTY_STORE_USERS_FOUND_IN_CACHE ) ) );
+            _bStoreUsersNotFoundInCache = Boolean.valueOf( Boolean.parseBoolean( AppPropertiesService.getProperty( 
+                            PROPERTY_STORE_USERS_FOUND_IN_CACHE ) ) );
         }
+
         return _bStoreUsersNotFoundInCache;
     }
 }
