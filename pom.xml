@@ -8,7 +8,7 @@
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>plugin-searchldap</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>Lutece search LDAP plugin</name>
     <repositories>
         <repository>
@@ -35,6 +35,6 @@
         <connection>scm:git:https://github.com/lutece-platform/lutece-auth-plugin-searchldap.git</connection>
         <developerConnection>scm:git:https://github.com/lutece-platform/lutece-auth-plugin-searchldap.git</developerConnection>
         <url>https://github.com/lutece-platform/lutece-auth-plugin-searchldap.git</url>
-      <tag>plugin-searchldap-1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 </project>
